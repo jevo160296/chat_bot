@@ -10,21 +10,32 @@ def show_chat_history(messages: list[ChatElement]):
     for message in messages:
         role = message["role"]
         content = message["content"]
-        history += f"{role}: {content}\n"
+        history += f"{role}: {content}\n\n"
     return history
 
 
 # Función principal para la aplicación de Streamlit
 def main(chatbot: Chatbot):
-    st.title("Chatbot con GPT-3.5 Turbo")
+    st.title("Chatbot con GPT-3.5 Turbo.")
 
-    user_input = st.text_input("Tú:", "")
+    if 'user_input' not in st.session_state:
+        st.session_state.user_input = ''
+
+    def submit():
+        st.session_state.user_input = st.session_state.widget
+        st.session_state.widget = ''
+
+    st.text_input('Tú:', key='widget', on_change=submit)
+
+    user_input = st.session_state.user_input
 
     if user_input:
         response = chatbot.process_text(user_input)
         reversed_response = list(islice(reversed(response[1:]), 5))
         history = show_chat_history(reversed_response)
         st.text_area("Historial de chat", value=history, height=400)
+
+    st.subheader(f"API calls: {chatbot.api_calls}")
 
 
 if __name__ == "__main__":
